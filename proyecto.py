@@ -259,73 +259,91 @@ plt.show()
 # ANÁLISIS REGRESIÓN LOGÍSTICA
 ###############################################################################
 ###############################################################################
-
+'''
+print("====================ANÁLISIS DE RL====================")
 ## Análisis max_iter
 y_clases = np.array(y_cod).reshape((1,-1))[0]
 
-# iters = []
-# aciertos_maxiter = []
-# for i in range(300,1000,100):
-#     iters.append(i)
-#     aciertos_maxiter.append(cross_val_score(SGDClassifier(loss='log',max_iter=i,n_jobs=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+iters = []
+aciertos_maxiter = []
+for i in range(300,1000,100):
+    iters.append(i)
+    aciertos_maxiter.append(cross_val_score(SGDClassifier(loss='log',max_iter=i,n_jobs=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
 
-# plt.ylabel("Accuracy de validación medio")
-# plt.xlabel("Número de iteraciones")
-# plt.title("Accuracy de Regresión Logística en función del número máximo de iteraciones")
-# plt.plot(iters,aciertos_maxiter)
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Número de iteraciones")
+plt.title("Accuracy de Regresión Logística en función del número máximo de iteraciones")
+plt.plot(iters,aciertos_maxiter)
+plt.show()
 
 ## Regularización y valores de lambda
-# regularization = {'penalty':['l1','l2'],
-#                   'alpha':[1e-6,1e-5,1e-4,1e-3,1e-2,1e-1]}
+aciertos_reg = {'l1':0.0,'l2':0.0}
+aciertos_reg['l1'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',n_jobs=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_reg['l2'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l2',n_jobs=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
 
-# regularization_GridSearch = GridSearchCV(SGDClassifier(loss='log',max_iter=300, n_jobs=-1),regularization,scoring='accuracy',n_jobs=-1)
-# regularization_GridSearch.fit(X,y_clases)
-# print("Mejores valores para regularización: ", regularization_GridSearch.best_params_)
-# print("Con un accuracy de: ", regularization_GridSearch.best_score_)
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Tipo de regularización")
+plt.title("Accuracy de Regresión Logística en función del tipo de regularización")
+plt.bar(list(aciertos_reg.keys()),aciertos_reg.values())
+plt.show()
 
+alphas = []
+alpha = 1e-6
+aciertos_alpha = []
+for i in range(6):
+    alphas.append(alpha)
+    aciertos_alpha.append(cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=alpha,n_jobs=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+    alpha*=10
+
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Valor de constante de regularización")
+plt.title("Accuracy de Regresión Logística en función de la constante alpha")
+plt.xscale('log')
+plt.plot(alphas,aciertos_alpha)
+plt.show()
 
 ## Learning rate
-# aciertos_lrs = {'constant':0.0,'optimal':0.0,'invscaling':0.0,'adaptive':0.0}
+aciertos_lrs = {'constant':0.0,'optimal':0.0,'invscaling':0.0,'adaptive':0.0}
 
-# aciertos_lrs['constant'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='constant',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
-# aciertos_lrs['optimal'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='optimal',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
-# aciertos_lrs['invscaling'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='invscaling',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
-# aciertos_lrs['adaptive'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_lrs['constant'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='constant',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_lrs['optimal'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='optimal',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_lrs['invscaling'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='invscaling',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_lrs['adaptive'] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=0.1),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
 
 
-# plt.ylabel("Accuracy de validación medio")
-# plt.xlabel("Tipo de learning rate")
-# plt.title("Accuracy de Regresión Logística en función del tipo de learning rate")
-# plt.bar(list(aciertos_lrs.keys()),aciertos_lrs.values())
-# plt.show()
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Tipo de learning rate")
+plt.title("Accuracy de Regresión Logística en función del tipo de learning rate")
+plt.bar(list(aciertos_lrs.keys()),aciertos_lrs.values())
+plt.show()
 
 # # Learning rate inicial
-# aciertos_eta0 = []
-# etas0=[]
-# eta0=1e-3
-# for i in range(4):
-#     aciertos_eta0.append(cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=eta0),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
-#     etas0.append(eta0)
-#     eta0*=10
+aciertos_eta0 = []
+etas0=[]
+eta0=1e-3
+for i in range(4):
+    aciertos_eta0.append(cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=eta0),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+    etas0.append(eta0)
+    eta0*=10
 
-# plt.ylabel("Accuracy de validación medio")
-# plt.xlabel("Valor de eta0")
-# plt.title("Accuracy de Regresión Logística en función del valor de learning rate inicial")
-# plt.xscale('log')
-# plt.plot(etas0,aciertos_eta0)
-# plt.show()
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Valor de eta0")
+plt.title("Accuracy de Regresión Logística en función del valor de learning rate inicial")
+plt.xscale('log')
+plt.plot(etas0,aciertos_eta0)
+plt.show()
 
 ## Early stopping
-# aciertos_es = {True: 0.0, False: 0.0}
-# indices = [True,False]
-# for i in range(2):
-#     aciertos_es[indices[i]] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=0.01, early_stopping=indices[i]),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
+aciertos_es = {True: 0.0, False: 0.0}
+indices = [True,False]
+for i in range(2):
+    aciertos_es[indices[i]] = cross_val_score(SGDClassifier(loss='log',max_iter=300,penalty='l1',alpha=0.001,n_jobs=-1,learning_rate='adaptive',eta0=0.01, early_stopping=indices[i]),X,y_clases,n_jobs=-1,scoring='accuracy').mean()
 
-# plt.ylabel("Accuracy de validación medio")
-# plt.xlabel("Early stopping")
-# plt.title("Accuracy de Regresión Logística en función del valor de early stopping")
-# plt.bar(list(aciertos_es.keys()),aciertos_es.values())
-# plt.show()
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Early stopping")
+plt.title("Accuracy de Regresión Logística en función del valor de early stopping")
+plt.bar(list(aciertos_es.keys()),aciertos_es.values())
+plt.show()
 
 ## n_iter_no_change y tol
 tol = {'tol':[1e-5,1e-4,1e-3,1e-2,1e-1],
@@ -335,20 +353,131 @@ tol_GridSearch = GridSearchCV(SGDClassifier(loss='log',max_iter=300,penalty='l1'
 tol_GridSearch.fit(X,y_clases)
 print("Mejores valores para tol y n_iter_no_change: ", tol_GridSearch.best_params_)
 print("Con un accuracy de: ", tol_GridSearch.best_score_)
-
-
+'''
 ###############################################################################
 ###############################################################################
 # FIN ANÁLISIS REGRESIÓN LOGÍSTICA
 ###############################################################################
 ###############################################################################
 
+###############################################################################
+###############################################################################
+# ANÁLISIS MLP
+###############################################################################
+###############################################################################
+
+
+###############################################################################
+###############################################################################
+# FIN ANÁLISIS MLP
+###############################################################################
+###############################################################################
+
+###############################################################################
+###############################################################################
+# ANÁLISIS SVC
+###############################################################################
+###############################################################################
+print("====================ANÁLISIS DE SVM====================")
+
+# Max iters
+y_clases = np.array(y_cod).reshape((1,-1))[0]
+
+iters = [-1]
+aciertos_maxiter = []
+aciertos_maxiter.append(cross_val_score(SVC(max_iter=-1),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+for i in range(200,300,25):
+    iters.append(i)
+    aciertos_maxiter.append(cross_val_score(SVC(max_iter=i),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Número de iteraciones")
+plt.title("Accuracy de SVC en función del número máximo de iteraciones")
+plt.scatter(iters,aciertos_maxiter)
+plt.show()
+
+# La regularización es L2, podemos ajustar C
+Cs = [4.5,5,5.5]
+aciertos_C = []
+for i in Cs:
+    aciertos_C.append(cross_val_score(SVC(C=i),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Constante C")
+plt.title("Accuracy de SVC en función de la constante C")
+plt.plot(Cs,aciertos_C)
+plt.show()
+
+# Tipo de kernel
+params_kernel = {'kernel':['poly','rbf'],'degree':range(3,7)}
+kernel_GridSearch = GridSearchCV(SVC(C=5),params_kernel,scoring='accuracy')
+kernel_GridSearch.fit(X,y_clases)
+
+print("Mejores valores para el kernel: " ,kernel_GridSearch.best_params_)
+print("Con accuracy de: ", kernel_GridSearch.best_score_)
+
+# gamma
+aciertos_gamma = {'scale':0.0,'auto':0.0}
+for key in list(aciertos_gamma.keys()):
+    aciertos_gamma[key] = cross_val_score(SVC(C=5,gamma=key),X,y_clases,scoring='accuracy',n_jobs=-1).mean()
+
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Tipo de gamma")
+plt.title("Accuracy de SVC en función del tipo de gamma")
+plt.bar(list(aciertos_gamma.keys()),aciertos_gamma.values())
+plt.show()
+
+# Criterio de parada tol
+tols = []
+aciertos_tol = []
+tol = 1e-5
+for i in range(6):
+    tols.append(tol)
+    aciertos_tol.append(cross_val_score(SVC(C=5, tol = tol),X,y_clases,n_jobs=-1,scoring='accuracy').mean())
+    tol*=10
+
+plt.ylabel("Accuracy de validación medio")
+plt.xlabel("Valor de tol")
+plt.title("Accuracy de SVC en función del valor de tol")
+plt.plot(tols,aciertos_tol)
+plt.xscale('log')
+plt.show()
+
+
+# shrinking
+print("Sin heurística: ", cross_val_score(SVC(C=5,tol=1e-4,shrinking=False),X,y_clases,scoring='accuracy',n_jobs=-1).mean())
+
+# probability
+print("Estimaciones probabilísticas True: ", cross_val_score(SVC(C=5,tol=1e-4,probability=True),X,y_clases,scoring='accuracy',n_jobs=-1).mean())
+
+# decision function
+print("Decision function OVO: " , cross_val_score(SVC(C=5,tol=1e-4, decision_function_shape='ovo'),X,y_clases,scoring='accuracy',n_jobs=-1).mean())
+###############################################################################
+###############################################################################
+# FIN ANÁLISIS SVC
+###############################################################################
+###############################################################################
 
 ###############################################################################
 ###############################################################################
 # PRUEBECILLAS CON MODELOS (NADA DEFINITIVO)
 ###############################################################################
 ###############################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # y_clases = np.array(y_cod).reshape((1,-1))[0]
 # errores = 7*[0]
